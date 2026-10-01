@@ -1,0 +1,10 @@
+#speech .speech-answer { margin:12px 0 0; font-size:1em; line-height:1.75; color:inherit; }
+#speech .speech-sentence { display:block; color:inherit; opacity:.48; transition:opacity .2s ease; }
+#speech .speech-sentence + .speech-sentence { margin-top:9px; }
+#speech .speech-sentence.is-current { opacity:1; animation:sentence-enter .2s ease-out both; }
+#speech .speech-answer .sub { display:inline; margin:0; font:inherit; color:inherit; }
+#speech .speech-answer.is-complete { opacity:1; text-align:start; text-wrap:pretty; }
+@keyframes sentence-enter { from { opacity:.45; transform:translateY(3px); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce) {
+  #speech, #speech .ln.new, #speech .speech-sentence { animation:none !important; transition:none !important; }
+}
