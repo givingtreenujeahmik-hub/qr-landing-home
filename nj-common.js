@@ -12,7 +12,7 @@
    - 상품 페이지 하단의 data-link 버튼(instagram/website/site-ring/home/map) 연결
    - "매장 오시는 길" 팝업 (챗봇의 매장 정보 카드와 동일한 구성: 매장 2곳 × 지도 링크 2개)
    - 챗봇 FAB(njOpenChatbot)·커스텀 버튼(njOpenSimulation) → nj-widget.js 연결
-   - GA4 로더 (측정 ID는 자리표시자이며, GA4 속성을 만든 뒤 GA_ID 값만 바꾸면 됩니다)
+   - GA4 수집 설정과 테스트 모드 → nj-ga.js / ANALYTICS.md
    ══════════════════════════════════════════════════════════════ */
 (function(){
   'use strict';
@@ -33,7 +33,8 @@
   function safeSet(k,v){ try{ localStorage.setItem(k,v); }catch(_){} }
 
   var Q = new URLSearchParams(location.search);
-  var qStore = Q.get('store');
+  var qrMatch = /^(main|yeonbang)_(home|moru|ring|earring|earcuff)$/.exec(Q.get('qr') || '');
+  var qStore = qrMatch ? qrMatch[1] : Q.get('store');
   var STORE = (qStore === 'main' || qStore === 'yeonbang')
             ? qStore
             : (safeGet('nj_store') || 'main');
@@ -61,9 +62,9 @@ if (LANG === 'tw') LANG = 'cn';   /* 번체는 제공 종료 — 간체로 대�
       var l = btn.getAttribute('data-lang');
       LANG = l;
       safeSet('nj_lang', l);
-      if (window.gtag) window.gtag('event', 'select_language', { language: l });
+      if (window.gtag) window.gtag('event', 'select_language', { language: l, interaction_source: 'entry' });
       /* 언어를 고른 뒤 첫 화면: index.html의 <body data-start="moru.html"> 등으로 품목별 QR 폴더마다 지정. 없으면 홈 */
-      window.njGoto(document.body.getAttribute('data-start') || 'home.html');
+      window.njGoto(qrMatch ? qrMatch[2] + '.html' : (document.body.getAttribute('data-start') || 'home.html'));
     });
   });
 
@@ -128,7 +129,7 @@ if (LANG === 'tw') LANG = 'cn';   /* 번체는 제공 종료 — 간체로 대�
     window.__njWidgetLoaded = true;
     window.NJ_WIDGET = { store: STORE, lang: LANG, mode: 'panel', button: hasOwnFab ? '0' : '1', icon: FAB_ICON };
     var ws = document.createElement('script');
-    ws.src = 'nj-widget.js?v=20261001-frequent-motion';
+    ws.src = 'nj-widget.js?v=20261005-analytics2';
     ws.setAttribute('data-chat', 'chat.html');
     ws.setAttribute('data-custom', 'custom.html');
     document.body.appendChild(ws);
@@ -197,7 +198,7 @@ if (LANG === 'tw') LANG = 'cn';   /* 번체는 제공 종료 — 간체로 대�
         var l = b.getAttribute('data-l');
         LANG = l;
         safeSet('nj_lang', l);
-        if (window.gtag) window.gtag('event', 'select_language', { language: l, source: 'switcher' });
+        if (window.gtag) window.gtag('event', 'select_language', { language: l, interaction_source: 'switcher' });
         var file = location.pathname.split('/').pop() || 'home.html';
         window.njGoto(file);
       });

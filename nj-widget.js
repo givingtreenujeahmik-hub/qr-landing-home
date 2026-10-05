@@ -266,6 +266,7 @@
   function closeChat(){
     if (!open) return;
     open = false;
+    try{ if(window.gtag) window.gtag('event', 'chatbot_close'); }catch(_){}
     panel.classList.remove('on');
     dim.classList.remove('on');
     if (btn) btn.style.display = '';
