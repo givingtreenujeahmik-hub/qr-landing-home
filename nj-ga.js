@@ -86,6 +86,12 @@
   }
   window.dataLayer = window.dataLayer || [];
   if (!raw) raw = function(){ window.dataLayer.push(arguments); };
+  var moruNames = {
+    tinkerbell_nanny: '팅커벨내니', nyamnyam_daisy: '냠냠데이지', beauty: '뷰리',
+    gyuljwa: '귤좌', delibear: '딜리베어', yoon_knit: '윤뜨개', magami: '마감이',
+    brachio: '브라키오', joan_miro: '호안미로', mmmmmm: 'mmmmmm', cakey: '케이키',
+    ulan: '울란', gyunyupang: '규뉴팡', delibear_express: '딜리베어 익스프레스'
+  };
   function track(name, p){
     if (testing || events.indexOf(name) < 0) return;
     var params = clean(p), stamp = Date.now();
@@ -94,6 +100,10 @@
       params.link = ({website:'official_website', 'site-ring':'official_website'})[params.link] || params.link;
       params.destination = params.link || 'other';
       params.from = params.from || page;
+      // Display names come only from the fixed catalog; never send arbitrary text.
+      if (page === 'moru' && Object.prototype.hasOwnProperty.call(moruNames, params.card)) {
+        params.moru_name = moruNames[params.card];
+      }
       params.journey_stage = params.journey_stage || (page === 'custom' && lastSummary ? 'custom_summary' : 'browse');
     }
     if (name === 'custom_shop_click') {
