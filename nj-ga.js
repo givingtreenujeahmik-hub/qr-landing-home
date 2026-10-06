@@ -145,7 +145,11 @@
     var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
     if (!a) return;
     var target = destination(a.href);
-    if (target) track('outbound_click', { link: target, from: page });
+    if (target) {
+      var params = { link: target, from: page };
+      if (a.dataset && a.dataset.moruCard) params.card = a.dataset.moruCard;
+      track('outbound_click', params);
+    }
   });
   var depths = {}, maxDepth = 0, seconds = 0, engaged = false;
   function reading(){
