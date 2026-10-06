@@ -82,3 +82,19 @@
 ## 모루 카드별 통계
 
 `outbound_click`에 `page_name=moru`, `destination=smartstore` 조건을 적용하고, 행을 `모루 상품명(moru_name)`, 값은 이벤트 수와 총 사용자 수로 설정합니다. 상품명은 고정된 카드 목록에서만 가져옵니다. 기존 식별자 `card`도 유지합니다. 개별 상품과 카테고리 링크 모두 카드별로 집계하며 실제 구매나 외부 페이지 로드 완료를 뜻하지 않습니다. 한글 상품명은 이 변경 이후의 클릭부터 전송되며 과거 식별자 기록은 그대로 유지됩니다.
+
+## 커스텀 관심도와 완성 조합
+- custom_selection: selection_type=doll(색상/인형) 또는 item(아이템), selection_name은 고정 카탈로그의 한국어 이름.
+- selection_stage=explore: 고르는 중 클릭, final: 완성 화면에 남은 조합, store: 스마트스토어로 이동할 때의 조합.
+- selection_action=select/add/remove/confirm. 해제 클릭은 추가 클릭과 구분.
+- 기본 인형은 클릭 없이 완성해도 최종 집계에 포함. 같은 조합으로 완성 창을 다시 열면 중복 집계하지 않음. 조합을 수정해서 완성하면 새 완료로 집계.
+- 최종은 완성 화면 기준이며 실제 구매 또는 결제 완료를 뜻하지 않음. 아이템 없는 완성은 아이템 최종 집계에 포함하지 않음.
+- chatbot_question의 question_name: 정해진 질문 문구를 한국어로 표시. 사용자 자유 입력은 전송하지 않음.
+
+|GA 측정기준|매개변수|
+|---|---|
+|선택 이름|selection_name|
+|선택 대상|selection_type|
+|선택 단계|selection_stage|
+|선택 행동|selection_action|
+|질문 이름|question_name|

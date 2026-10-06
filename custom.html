@@ -1019,9 +1019,12 @@ function render(){
     <button class="go" id="goBtn">${esc(n.go)}</button>`;
 
   $('#dolls').querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{ setBase(b.dataset.b); spark(); render();
-    gaEvent('custom_doll', { doll: b.dataset.b, doll_name: (byId(BASES,b.dataset.b)||{n:{}}).n.ko }); });
+    gaEvent('custom_doll', { doll: b.dataset.b });
+    gaEvent('custom_selection', { selection_type:'doll', selection_id:b.dataset.b, selection_stage:'explore', selection_action:'select' }); });
   $('#igrid').querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{ if(toggleItem(b.dataset.i)){ spark();
-    if(PICK.items.some(p=>p.id===b.dataset.i)) gaEvent('custom_item', { item: b.dataset.i, item_name: (byId(ITEMS,b.dataset.i)||{n:{}}).n.ko }); } render(); });
+    const added = PICK.items.some(p=>p.id===b.dataset.i);
+    if(added) gaEvent('custom_item', { item:b.dataset.i });
+    gaEvent('custom_selection', { selection_type:'item', selection_id:b.dataset.i, selection_stage:'explore', selection_action:added?'add':'remove' }); } render(); });
   $('#sw').querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{ PICK.wire=b.dataset.w; render(); });
   $('#picked').querySelectorAll('[data-spot]').forEach(b=>b.onclick=()=>{
     setSpot(b.dataset.sid, b.dataset.spot); spark(2); render(); });
@@ -1036,7 +1039,16 @@ function gaEvent(name, p){ try{ if(window.gtag) window.gtag('event', name, p || 
 const recapInfo = () => ({ doll: PICK.base, item_count: PICK.items.length, items: PICK.items.map(p=>p.id).join(','), total: customPrice() });
 
 /* ── 카운터에 보여주는 요약 ── */
+let lastFinalSelection = '';
+function trackFinalSelection(stage){
+  const signature = JSON.stringify([PICK.base, PICK.items.map(p=>p.id).sort()]);
+  if(stage==='final' && signature===lastFinalSelection) return;
+  if(stage==='final') lastFinalSelection = signature;
+  gaEvent('custom_selection', { selection_type:'doll', selection_id:PICK.base, selection_stage:stage, selection_action:'confirm' });
+  PICK.items.forEach(p=>gaEvent('custom_selection', { selection_type:'item', selection_id:p.id, selection_stage:stage, selection_action:'confirm' }));
+}
 function showRecap(){
+  trackFinalSelection('final');
   gaEvent('custom_summary', recapInfo());
   const n = NAV[lang], t = T[lang];
   const b = byId(BASES, PICK.base) || BASES[0];
@@ -1084,7 +1096,7 @@ function showRecap(){
   cu.classList.add('sheet');
   $('#cuSheetIn').scrollTop = 0;
   $('#cuClose').onclick = closeSheet;
-  $('#shopBtn').addEventListener('click', ()=>gaEvent('custom_shop_click', recapInfo()));
+  $('#shopBtn').addEventListener('click', ()=>{ trackFinalSelection('store'); gaEvent('custom_shop_click', recapInfo()); });
 }
 function closeSheet(){ cu.classList.remove('sheet'); }
 
@@ -1349,6 +1361,6 @@ drawDoll();
 })();
 
 </script>
-<script src="nj-ga.js?v=20261005-analytics2"></script>
+<script src="nj-ga.js?v=20261006-preferences"></script>
 </body>
 </html>

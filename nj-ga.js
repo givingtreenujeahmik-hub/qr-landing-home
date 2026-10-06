@@ -59,7 +59,7 @@
   function clean(p){
     var result = {}, numbers = ['item_count', 'estimated_value', 'depth_percent', 'visible_seconds'];
     var strings = ['language', 'interaction_source', 'category', 'to', 'link', 'from', 'card',
-      'question_id', 'question_cat', 'chat_lang', 'chat_store', 'doll', 'item', 'selected_items', 'destination', 'journey_stage'];
+      'question_id', 'question_cat', 'chat_lang', 'chat_store', 'doll', 'item', 'selected_items', 'destination', 'journey_stage', 'selection_type', 'selection_id', 'selection_stage', 'selection_action'];
     p = p || {};
     if (p.source && !p.interaction_source) p = Object.assign({}, p, { interaction_source: p.source });
     if (typeof p.items === 'string') p = Object.assign({}, p, { selected_items: p.items });
@@ -73,7 +73,7 @@
   var events = ['select_language', 'select_category', 'outbound_click', 'open_custom', 'view_store_map',
     'chatbot_open', 'chatbot_close', 'chatbot_card', 'chatbot_question', 'chatbot_to_custom', 'chatbot_no_answer',
     'custom_doll', 'custom_item', 'custom_summary', 'custom_shop_click', 'qr_landing', 'view_category',
-    'custom_view', 'scroll_depth', 'engaged_read'];
+    'custom_view', 'custom_selection', 'scroll_depth', 'engaged_read'];
   var lastEvent = {}, lastSummary = null, raw = window.gtag;
   function destination(href){
     try {
@@ -92,9 +92,21 @@
     brachio: '브라키오', joan_miro: '호안미로', mmmmmm: 'mmmmmm', cakey: '케이키',
     ulan: '울란', gyunyupang: '규뉴팡', delibear_express: '딜리베어 익스프레스'
   };
+  var customNames = {"doll": {"white": "화이트", "greenlemon": "그린레몬", "blackcat": "깜장냥이", "pinkyellow": "핑크옐로우", "pinkpurple": "핑크퍼플", "black": "블랙", "bluepurple": "블루퍼플", "greycat": "회색냥이", "blue": "블루", "rainbow": "레인보우"}, "item": {"gGlass": "금테 안경", "bGlass": "까만 안경", "rGlass": "빨간 안경", "gCrown": "금색 왕관", "sCrown": "은색 왕관", "pRibbon": "핑크 도트 리본", "kRibbon": "까만 도트 리본", "yBag": "노란 뜨개 가방", "bBag": "하늘색 뜨개 가방", "cake": "하트 케이크", "matcha": "말차 라떼", "milk": "키티 딸기우유", "wand": "보라 요술봉", "ball": "축구공", "clover": "네잎클로버", "fish": "금붕어", "dollar": "달러", "won": "오만원권", "beerMug": "생맥주잔", "purpleIcecream": "보라 아이스크림", "chocolateIcecream": "초코 아이스크림", "violin": "바이올린", "vintageCamera": "빈티지 카메라", "whiteSeal": "하얀 물개", "babyRabbit": "아기 토끼", "ivoryDotRibbon": "흰 도트 리본", "eggBagel": "에그 베이글", "yellowDuck": "노란 오리"}};
+  var questionNames = {"location": "어떻게 가나요?", "stores": "두 매장 정보", "hours": "몇 시까지 해요?", "partner": "다른 지점도 있어요?", "custom": "커스텀 어떻게 해요?", "price": "얼마예요?", "custom_time": "얼마나 걸려요?", "reserve": "예약해야 하나요?", "styles": "어떤 색이 있어요?", "moru": "모루믹이 뭐예요?", "products": "어떤 상품이 있어요?", "friends": "다른 아이들도 보여주세요", "material": "소재가 뭐예요?", "care": "어떻게 관리해요?", "earring": "귀걸이는 어떤 스타일이에요?", "earcuff": "이어커프는 어떻게 껴요?", "ring": "반지는 어떻게 만들어요?", "tryon": "착용해 봐도 돼요?", "single": "하나만 살 수 있어요?", "taxfree": "면세 되나요?", "payment": "어떻게 결제해요?", "discount": "할인 있어요?", "online": "온라인으로 살 수 있어요?", "initial": "이니셜 새길 수 있어요?", "about": "넌 누구야?", "brand": "누제믹은 어떤 브랜드예요?", "origin": "어디서 만들어요?", "photo": "사진 찍어도 돼요?"};
   function track(name, p){
     if (testing || events.indexOf(name) < 0) return;
     var params = clean(p), stamp = Date.now();
+    if (name === 'custom_selection') {
+      var catalog = customNames[params.selection_type];
+      if (page !== 'custom' || !catalog || !Object.prototype.hasOwnProperty.call(catalog, params.selection_id) ||
+          ['explore', 'final', 'store'].indexOf(params.selection_stage) < 0 ||
+          ['select', 'add', 'remove', 'confirm'].indexOf(params.selection_action) < 0) return;
+      params.selection_name = catalog[params.selection_id];
+    }
+    if (name === 'chatbot_question' && Object.prototype.hasOwnProperty.call(questionNames, params.question_id)) {
+      params.question_name = questionNames[params.question_id];
+    }
     if (name === 'custom_summary') lastSummary = params;
     if (name === 'outbound_click') {
       params.link = ({website:'official_website', 'site-ring':'official_website'})[params.link] || params.link;
